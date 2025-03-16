@@ -339,69 +339,115 @@ export async function deleteRecipe(id: string) {
   }
 }
 
-// Fungsi untuk menghitung biaya resep
-async function calculateRecipeCost(recipeId: string) {
+// Fungsi untuk menghitung HPP resep
+export async function calculateRecipeCost(recipeId: string) {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const supabase = createServerComponentClient({ cookies });
     
-    // Ambil data resep
+    // Dapatkan resep
     const { data: recipe, error: recipeError } = await supabase
       .from('recipes')
-      .select('*')
+      .select('id, name, portion_size, waste_factor')
       .eq('id', recipeId)
-      .single()
+      .single();
     
-    if (recipeError || !recipe) {
-      throw new Error(recipeError?.message || 'Resep tidak ditemukan')
+    if (recipeError) {
+      throw new Error(recipeError.message);
     }
     
-    // Ambil bahan-bahan resep
-    const { data: recipeIngredients, error: ingredientsError } = await supabase
+    // Dapatkan bahan-bahan resep dengan data ingredient
+    const { data: ingredients, error: ingredientsError } = await supabase
       .from('recipe_ingredients')
       .select(`
-        *,
-        ingredient:ingredients(*),
-        sub_recipe:recipes(*)
+        id, 
+        quantity, 
+        ingredient_id, 
+        sub_recipe_id,
+        ingredients:ingredient_id (id, name, cost_per_unit, unit),
+        sub_recipes:sub_recipe_id (id, name, cost_per_serving)
       `)
-      .eq('recipe_id', recipeId)
+      .eq('recipe_id', recipeId);
     
     if (ingredientsError) {
-      throw new Error(ingredientsError.message)
+      console.error("Error fetching ingredients:", ingredientsError);
+      // Lanjutkan meskipun ada error
     }
     
-    let totalCost = 0
+    // Dapatkan biaya tambahan
+    let additionalCosts = [];
+    try {
+      const { data: costs, error: costsError } = await supabase
+        .from('recipe_additional_costs')
+        .select('*')
+        .eq('recipe_id', recipeId);
+      
+      if (!costsError && costs) {
+        additionalCosts = costs;
+      }
+    } catch (error) {
+      console.error("Error fetching additional costs:", error);
+      // Lanjutkan meskipun ada error, karena tabel mungkin belum ada
+    }
     
-    // Hitung biaya untuk setiap bahan
-    for (const item of recipeIngredients) {
-      if (item.ingredient_id && item.ingredient) {
-        // Konversi satuan jika diperlukan
-        // Untuk sederhananya, kita asumsikan satuan sama
-        totalCost += item.quantity * item.ingredient.price_per_unit
-      } else if (item.sub_recipe_id && item.sub_recipe) {
-        // Jika menggunakan sub-resep, gunakan cost_per_serving dari sub-resep
-        totalCost += item.quantity * (item.sub_recipe.cost_per_serving || 0)
+    // Hitung total biaya bahan
+    let totalIngredientCost = 0;
+    
+    if (ingredients) {
+      for (const item of ingredients) {
+        if (item.ingredient_id && item.ingredients) {
+          // Pastikan item.ingredients adalah objek tunggal, bukan array
+          const ingredientCost = item.quantity * ((item.ingredients as any).cost_per_unit || 0);
+          totalIngredientCost += ingredientCost;
+        } else if (item.sub_recipe_id && item.sub_recipes) {
+          // Pastikan item.sub_recipes adalah objek tunggal, bukan array
+          const subRecipeCost = item.quantity * ((item.sub_recipes as any).cost_per_serving || 0);
+          totalIngredientCost += subRecipeCost;
+        }
       }
     }
     
-    // Hitung biaya per porsi
-    const costPerServing = recipe.yield_quantity > 0 
-      ? totalCost / recipe.yield_quantity 
-      : totalCost
+    // Hitung total biaya tambahan
+    const totalAdditionalCost = additionalCosts.reduce((sum, cost) => sum + (cost.amount || 0), 0);
     
-    // Update cost_per_serving di resep
-    const { error: updateError } = await supabase
-      .from('recipes')
-      .update({ cost_per_serving: costPerServing })
-      .eq('id', recipeId)
+    // Hitung total biaya dasar (bahan + tambahan)
+    let totalBaseCost = totalIngredientCost + totalAdditionalCost;
     
-    if (updateError) {
-      throw new Error(updateError.message)
+    // Terapkan faktor penyusutan jika ada
+    if (recipe.waste_factor && recipe.waste_factor > 0) {
+      totalBaseCost = totalBaseCost / (1 - recipe.waste_factor);
     }
     
-    return { success: true, data: { cost_per_serving: costPerServing } }
+    // Hitung biaya per porsi
+    const costPerServing = recipe.portion_size > 0 
+      ? totalBaseCost / recipe.portion_size 
+      : totalBaseCost;
+    
+    // Update cost_per_serving di database
+    const { error: updateError } = await supabase
+      .from('recipes')
+      .update({ 
+        cost_per_serving: costPerServing,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', recipeId);
+    
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+    
+    return { 
+      success: true, 
+      data: { 
+        totalIngredientCost,
+        totalAdditionalCost,
+        totalBaseCost,
+        costPerServing,
+        wasteFactor: recipe.waste_factor || 0
+      } 
+    };
   } catch (error) {
-    console.error('Error calculating recipe cost:', error)
-    return { success: false, error: 'Gagal menghitung biaya resep' }
+    console.error('Error calculating recipe cost:', error);
+    return { success: false, error: 'Gagal menghitung biaya resep' };
   }
 }
 
@@ -415,7 +461,7 @@ export async function duplicateRecipe(id: string, newName: string) {
       .from('recipes')
       .select('*')
       .eq('id', id)
-      .single()
+      .single();
     
     if (recipeError || !originalRecipe) {
       throw new Error(recipeError?.message || 'Resep tidak ditemukan')
@@ -425,7 +471,7 @@ export async function duplicateRecipe(id: string, newName: string) {
     const { data: originalIngredients, error: ingredientsError } = await supabase
       .from('recipe_ingredients')
       .select('*')
-      .eq('recipe_id', id)
+      .eq('recipe_id', id);
     
     if (ingredientsError) {
       throw new Error(ingredientsError.message)

@@ -186,13 +186,13 @@ export interface Database {
           id: string
           business_id: string
           name: string
-          category: string | null
+          description: string | null
           portion_size: number
           portion_unit: string
-          preparation_time: number | null
-          cooking_time: number | null
           instructions: string | null
-          notes: string | null
+          image_url: string | null
+          cost_per_serving: number | null
+          waste_factor: number | null
           created_at: string
           updated_at: string | null
         }
@@ -200,13 +200,13 @@ export interface Database {
           id?: string
           business_id: string
           name: string
-          category?: string | null
+          description?: string | null
           portion_size: number
           portion_unit: string
-          preparation_time?: number | null
-          cooking_time?: number | null
           instructions?: string | null
-          notes?: string | null
+          image_url?: string | null
+          cost_per_serving?: number | null
+          waste_factor?: number | null
           created_at?: string
           updated_at?: string | null
         }
@@ -214,16 +214,25 @@ export interface Database {
           id?: string
           business_id?: string
           name?: string
-          category?: string | null
+          description?: string | null
           portion_size?: number
           portion_unit?: string
-          preparation_time?: number | null
-          cooking_time?: number | null
           instructions?: string | null
-          notes?: string | null
+          image_url?: string | null
+          cost_per_serving?: number | null
+          waste_factor?: number | null
           created_at?: string
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "recipes_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       recipe_ingredients: {
         Row: {
@@ -578,6 +587,44 @@ export interface Database {
           created_at?: string
           updated_at?: string | null
         }
+      }
+      recipe_additional_costs: {
+        Row: {
+          id: string
+          recipe_id: string
+          name: string
+          amount: number
+          notes: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          recipe_id: string
+          name: string
+          amount: number
+          notes?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          recipe_id?: string
+          name?: string
+          amount?: number
+          notes?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_recipe_additional_costs_recipe"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

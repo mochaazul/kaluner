@@ -1,6 +1,7 @@
 import { getRecipes } from "@/actions/recipes";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Calculator } from "lucide-react";
 import { Recipe } from "@/lib/types/recipe";
 import { Copy, Edit, Plus, Trash, Utensils } from "lucide-react";
 import Link from "next/link";
@@ -82,7 +83,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             <p className="text-sm text-gray-500">{recipe.category}</p>
           </div>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {recipe.yield_quantity} {recipe.yield_unit}
+            {recipe.portion_size} {recipe.portion_unit}
           </span>
         </div>
         
@@ -93,14 +94,22 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           </p>
         </div>
         
-        <div className="mt-4 flex justify-between">
-          <Link href={`/dashboard/recipes/${recipe.id}`}>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Edit size={14} />
-              <span>Edit</span>
-            </Button>
-          </Link>
-          <div className="flex gap-2">
+        <div className="mt-4 flex flex-col gap-2">
+          <div className="flex justify-between">
+            <Link href={`/dashboard/recipes/${recipe.id}`}>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Edit size={14} />
+                <span>Edit</span>
+              </Button>
+            </Link>
+            <Link href={`/dashboard/recipes/${recipe.id}/hpp`}>
+              <Button variant="outline" size="sm" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                <Calculator size={14} />
+                <span>Lihat HPP</span>
+              </Button>
+            </Link>
+          </div>
+          <div className="flex justify-between">
             <form action={`/dashboard/recipes/${recipe.id}/duplicate`}>
               <Button variant="outline" size="sm" className="flex items-center gap-1">
                 <Copy size={14} />

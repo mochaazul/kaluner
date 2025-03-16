@@ -25,19 +25,31 @@ export type RecipeIngredient = {
   updated_at: string;
 };
 
+export type AdditionalCost = {
+  id: string;
+  recipe_id: string;
+  name: string;
+  amount: number;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type Recipe = {
   id: string;
+  business_id: string;
   name: string;
-  category?: string;
+  description?: string;
   portion_size: number;
   portion_unit: string;
-  preparation_time?: number;
-  cooking_time?: number;
   instructions?: string;
-  notes?: string;
-  created_at: string;
+  image_url?: string;
+  cost_per_serving?: number;
+  waste_factor?: number;
+  created_at?: string;
   updated_at?: string;
-  business_id: string;
+  ingredients?: RecipeIngredient[];
+  additional_costs?: AdditionalCost[];
 };
 
 export type RecipeWithIngredients = Recipe & {
