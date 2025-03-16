@@ -17,14 +17,14 @@ export async function middleware(req: NextRequest) {
   }
 
   // Redirect ke login jika tidak ada session dan mencoba akses dashboard
-  if (!session && req.nextUrl.pathname.startsWith('/(dashboard)')) {
+  if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
     const redirectUrl = new URL('/login', req.url)
     return NextResponse.redirect(redirectUrl)
   }
 
   // Redirect ke dashboard jika sudah login dan mencoba akses login/register
   if (session && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/register')) {
-    const redirectUrl = new URL('/(dashboard)', req.url)
+    const redirectUrl = new URL('/dashboard', req.url)
     return NextResponse.redirect(redirectUrl)
   }
 
