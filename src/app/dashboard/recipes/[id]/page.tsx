@@ -7,14 +7,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 interface RecipeEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default async function RecipeEditPage({ params }: RecipeEditPageProps) {
+export default async function RecipeEditPage(props: RecipeEditPageProps) {
+  const params = await props.params;
   const { id } = params;
-  
+
   // Ambil data resep dan bahan-bahannya
   const { success: recipeSuccess, data: recipe, error } = await getRecipeById(id);
   const { success: ingredientsSuccess, data: ingredients } = await getIngredients();

@@ -23,8 +23,7 @@ export async function registerUser(formData: RegisterFormData) {
       }
     }
     
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+    const supabase = createRouteHandlerClient({ cookies })
     
     // Buat pengguna baru
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -43,7 +42,7 @@ export async function registerUser(formData: RegisterFormData) {
     
     // Gunakan service role key untuk membuat profil (bypass RLS)
     const supabaseAdmin = createRouteHandlerClient(
-      { cookies: () => cookieStore },
+      { cookies },
       { 
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
         supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -85,7 +84,7 @@ export async function registerUser(formData: RegisterFormData) {
 
 export async function loginUser(email: string, password: string) {
   const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const supabase = createRouteHandlerClient({ cookies })
   
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -104,7 +103,7 @@ export async function loginUser(email: string, password: string) {
 
 export async function forgotPassword(email: string) {
   const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const supabase = createRouteHandlerClient({ cookies })
   
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
@@ -122,7 +121,7 @@ export async function forgotPassword(email: string) {
 
 export async function resetPassword(password: string) {
   const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const supabase = createRouteHandlerClient({ cookies })
   
   const { error } = await supabase.auth.updateUser({
     password,
@@ -140,7 +139,7 @@ export async function resetPassword(password: string) {
 
 export async function logoutUser() {
   const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const supabase = createRouteHandlerClient({ cookies })
   
   await supabase.auth.signOut()
   redirect('/login')

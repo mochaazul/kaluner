@@ -5,12 +5,13 @@ import { IngredientForm } from "@/components/recipes/ingredient-form";
 import { Ingredient } from "@/lib/types/recipe";
 
 interface IngredientEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default async function IngredientEditPage({ params }: IngredientEditPageProps) {
+export default async function IngredientEditPage(props: IngredientEditPageProps) {
+  const params = await props.params;
   const { id } = params;
   const supabase = createServerComponentClient({ cookies });
 

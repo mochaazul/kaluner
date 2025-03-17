@@ -22,6 +22,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { ThemeToggle } from './theme-toggle';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
@@ -94,7 +95,7 @@ export function Sidebar({ className, ...props }: SidebarProps) {
   ];
 
   return (
-    <div className={cn("h-screen border-r bg-white w-64 flex flex-col", className)} {...props}>
+    <div className={cn("h-screen border-r bg-sidebar w-64 flex flex-col text-sidebar-foreground", className)} {...props}>
       <div className="p-6">
         <h1 className="text-2xl font-bold text-blue-600">Kaluner</h1>
         <p className="text-xs text-gray-500 mt-1">Manajemen Bisnis Kuliner</p>
@@ -120,6 +121,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
           )
         ))}
       </div>
+      <div className="mt-auto p-4 border-t flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          2025 Kaluner
+        </div>
+        <ThemeToggle />
+      </div>
     </div>
   );
 }
@@ -143,8 +150,8 @@ function SidebarItem({
       className={cn(
         "flex items-center gap-x-2 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
         active 
-          ? "bg-blue-100 text-blue-700" 
-          : "text-gray-700 hover:bg-gray-100"
+          ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+          : "text-sidebar-foreground hover:bg-sidebar-accent/50"
       )}
     >
       <div className="shrink-0">
@@ -182,8 +189,8 @@ function SidebarSubmenu({
           className={cn(
             "flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors",
             isActive 
-              ? "bg-blue-100 text-blue-700" 
-              : "text-gray-700 hover:bg-gray-100"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+              : "text-sidebar-foreground hover:bg-sidebar-accent/50"
           )}
         >
           <div className="flex items-center gap-x-2">
@@ -208,8 +215,8 @@ function SidebarSubmenu({
               className={cn(
                 "flex items-center px-4 py-2 text-sm rounded-lg transition-colors",
                 pathname === item.href
-                  ? "bg-blue-100 text-blue-700 font-medium"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50"
               )}
             >
               {item.label}

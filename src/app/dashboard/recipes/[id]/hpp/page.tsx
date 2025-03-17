@@ -14,15 +14,16 @@ import { RecipeIngredient } from "@/lib/types/recipe";
 import { CostAnalysis } from "@/components/recipes/cost-analysis";
 import { updateRecipe } from "@/actions/recipes";
 
-export default async function RecipeHPPPage({ params }: { params: { id: string } }) {
+export default async function RecipeHPPPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const id = params.id;
-  
+
   const { success, data: recipe, error } = await getRecipeById(id);
-  
+
   if (!success || !recipe) {
     return notFound();
   }
-  
+
   // Ambil biaya tambahan untuk resep ini
   let additionalCosts = [];
   try {
@@ -34,7 +35,7 @@ export default async function RecipeHPPPage({ params }: { params: { id: string }
     console.error("Error fetching additional costs:", error);
     // Lanjutkan meskipun ada error, karena tabel mungkin belum ada
   }
-  
+
   // Hitung HPP
   let costData = null;
   try {
@@ -46,7 +47,7 @@ export default async function RecipeHPPPage({ params }: { params: { id: string }
     console.error("Error calculating recipe cost:", error);
     // Lanjutkan meskipun ada error
   }
-  
+
   // Filter bahan-bahan yang valid (memiliki data ingredient atau sub_recipe)
   const validIngredients = (recipe.ingredients || []).filter(
     (ing) => ing.ingredient || ing.sub_recipe
@@ -54,7 +55,7 @@ export default async function RecipeHPPPage({ params }: { params: { id: string }
 
   // Siapkan data untuk pie chart
   const pieChartData = [];
-  
+
   // Tambahkan data bahan-bahan
   if (costData && costData.totalIngredientCost > 0) {
     pieChartData.push({
@@ -63,7 +64,7 @@ export default async function RecipeHPPPage({ params }: { params: { id: string }
       percentage: (costData.totalIngredientCost / costData.totalBaseCost) * 100
     });
   }
-  
+
   // Tambahkan data biaya tambahan
   if (additionalCosts && additionalCosts.length > 0) {
     additionalCosts.forEach(cost => {
@@ -76,7 +77,7 @@ export default async function RecipeHPPPage({ params }: { params: { id: string }
       }
     });
   }
-  
+
   // Tambahkan data penyusutan jika ada
   if (costData && recipe.waste_factor && recipe.waste_factor > 0) {
     const wasteAmount = costData.totalBaseCost * recipe.waste_factor / (1 - recipe.waste_factor);
@@ -86,10 +87,10 @@ export default async function RecipeHPPPage({ params }: { params: { id: string }
       percentage: (wasteAmount / costData.totalBaseCost) * 100
     });
   }
-  
+
   // Hitung total biaya bahan
   let totalIngredientCost = 0;
-  
+
   for (const item of validIngredients) {
     if (item.ingredient) {
       const ingredientCost = item.quantity * (item.ingredient.cost_per_unit || 0);
@@ -99,20 +100,20 @@ export default async function RecipeHPPPage({ params }: { params: { id: string }
       totalIngredientCost += subRecipeCost;
     }
   }
-  
+
   // Hitung total biaya tambahan
   const totalAdditionalCost = additionalCosts?.reduce((sum, cost) => sum + (cost.amount || 0), 0) || 0;
-  
+
   // Hitung total biaya dasar (bahan + tambahan)
   let totalBaseCost = totalIngredientCost + totalAdditionalCost;
-  
+
   // Terapkan faktor penyusutan jika ada
   let wasteAmount = 0;
   if (recipe.waste_factor && recipe.waste_factor > 0) {
     wasteAmount = totalBaseCost * recipe.waste_factor / (1 - recipe.waste_factor);
     totalBaseCost = totalBaseCost / (1 - recipe.waste_factor);
   }
-  
+
   // Hitung biaya per porsi
   const costPerServing = recipe.portion_size > 0 
     ? totalBaseCost / recipe.portion_size 
