@@ -1,20 +1,22 @@
 'use server'
 
-import { duplicateRecipe } from "@/actions/recipes";
+import { duplicateRecipeAction } from "@/actions/route-actions";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const { id } = params;
-  const result = await duplicateRecipe(id, '');
+  const { id } = context.params;
+  await duplicateRecipeAction(id);
+  return NextResponse.redirect(new URL('/dashboard/recipes', request.url));
+}
 
-  if (result.success) {
-    return NextResponse.redirect(new URL('/dashboard/recipes', request.url));
-  } else {
-    return NextResponse.redirect(
-      new URL(`/dashboard/recipes?error=${encodeURIComponent(result.error || 'Gagal menduplikasi resep')}`, request.url)
-    );
-  }
+export async function POST(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
+  const { id } = context.params;
+  await duplicateRecipeAction(id);
+  return NextResponse.redirect(new URL('/dashboard/recipes', request.url));
 }
