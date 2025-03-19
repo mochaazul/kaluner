@@ -8,25 +8,26 @@ Kaluner adalah aplikasi manajemen bisnis kuliner yang dirancang untuk membantu p
 
 ### 2.1 Arsitektur Aplikasi
 
-Kaluner menggunakan arsitektur **fullstack Next.js** dengan **Supabase** sebagai backend-as-a-service. Arsitektur ini memungkinkan pengembangan yang cepat, skalabilitas, dan pemeliharaan yang lebih mudah dengan mengurangi kompleksitas infrastruktur.
+Kaluner menggunakan arsitektur **fullstack Next.js 14** dengan **Supabase** sebagai backend-as-a-service. Arsitektur ini memungkinkan pengembangan yang cepat, skalabilitas, dan pemeliharaan yang lebih mudah dengan mengurangi kompleksitas infrastruktur.
 
 ```
 +------------------+     +------------------+     +------------------+
 |                  |     |                  |     |                  |
-|  Next.js         |     |    Supabase      |     |    Supabase      |
+|  Next.js 14      |     |    Supabase      |     |    Supabase      |
 |  Frontend &      |<--->|    API Layer     |<--->|    PostgreSQL    |
-|  API Routes      |     |    & Functions   |     |    Database      |
+|  Server Actions  |     |    & Functions   |     |    Database      |
 |                  |     |                  |     |                  |
 +------------------+     +------------------+     +------------------+
 ```
 
 ### 2.2 Komponen Utama
 
-1. **Next.js (Frontend & Backend)**
-   - Server Components dan Client Components
-   - API Routes untuk endpoint custom
+1. **Next.js 14 (Frontend & Backend)**
+   - Server Components untuk data fetching dan rendering
+   - Client Components untuk interaktivitas
    - Server Actions untuk mutasi data
    - Middleware untuk autentikasi dan otorisasi
+   - App Router untuk routing berbasis file system
 
 2. **Supabase (Backend-as-a-Service)**
    - Database PostgreSQL terkelola
@@ -49,7 +50,7 @@ Kaluner direncanakan untuk di-deploy menggunakan:
 
 ### 3.1 Frontend
 
-- **Framework**: Next.js 14+ dengan App Router
+- **Framework**: Next.js 14 dengan App Router
 - **Language**: TypeScript
 - **UI Components**: 
   - Shadcn/UI (berbasis Radix UI)
@@ -411,10 +412,11 @@ kaluner/
 
 ### 5.2 Server Components vs Client Components
 
-- **Server Components** (default in App Router):
+- **Server Components** (default di Next.js 14):
   - Data fetching dari Supabase
   - Rendering UI statis atau yang jarang berubah
   - SEO-sensitive pages
+  - Akses langsung ke database dan resources server
 
 - **Client Components** (dengan "use client" directive):
   - Interactive UI elements
@@ -422,17 +424,18 @@ kaluner/
   - Komponen yang menggunakan hooks React
   - Realtime features dengan Supabase subscriptions
 
-### 5.3 API Routes dan Server Actions
+### 5.3 Server Actions dan API Routes
+
+- **Server Actions** (fitur utama Next.js 14):
+  - Form submissions dengan `action={...}` pada form
+  - Data mutations dengan progressive enhancement
+  - Complex business logic yang berjalan di server
+  - Validasi data server-side dengan Zod
 
 - **API Routes** (`app/api/`):
   - Webhook handlers
   - Integrasi dengan layanan pihak ketiga
   - Custom endpoints yang tidak dapat ditangani oleh Supabase
-
-- **Server Actions**:
-  - Form submissions
-  - Data mutations
-  - Complex business logic
 
 ## 6. Integrasi Supabase
 

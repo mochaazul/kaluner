@@ -1,2 +1,4 @@
 please always refer the technical document and feature document on docs folder
 also use bahasa indonesia to talk
+
+the development should follow TEST-DRIVEN DEVELOPMENT every feature / component test script should be created first
